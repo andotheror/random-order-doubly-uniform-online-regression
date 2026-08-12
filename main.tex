@@ -1,0 +1,337 @@
+\documentclass[twoside]{article}
+
+\usepackage[preprint]{aistats2026}
+\usepackage[round,authoryear]{natbib}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\renewcommand{\bibname}{References}
+\renewcommand{\bibsection}{\subsubsection*{\bibname}}
+\bibliographystyle{apalike}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\E}{\mathbb E}
+\newcommand{\Pp}{\mathbb P}
+\newcommand{\R}{\mathbb R}
+\newcommand{\cH}{\mathcal H}
+\newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\clip}{\operatorname{clip}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Reg}{\operatorname{Reg}}
+
+\begin{document}
+\runningauthor{}
+
+\twocolumn[
+\aistatstitle{Random Order Enables Doubly-Uniform Online Regression}
+
+\aistatsauthor{Pahan Dewasurendra}
+\aistatsaddress{Johns Hopkins University}]
+
+\begin{abstract}\sloppy
+Online square-loss regression admits no sublinear regret bound that is simultaneously independent of the comparator norm and covariate scale in dimension above one when covariates are adaptive. We show that uniformly shuffling only the covariates changes the answer sharply, even if bounded labels remain fully adaptive. The unregularized Vovk--Azoury--Warmuth forecaster has expected regret at most
+$B^2\sum_{t\le T}\min(r,t)/t$, where $r$ is the final design rank. The result needs no norm, condition-number, distributional, or ambient-dimension bound. Its core is a distributional theorem for online leverage. Conditional on any fixed covariate multiset, the leverage sum is dominated in Laplace transform by
+$r+\sum_{t=r+1}^T\operatorname{Bernoulli}(r/t)$.
+This yields Bennett tails, an exact expected rank-profile formula, and kernelization by finite-span reduction. The domination is asymptotically exact in distribution already in one dimension. A Bayesian lower bound proves the minimax rate $\Theta(B^2r\log(eT/r))$ and recovers leading constant one in the large-block regime. Finally, entropy transport quantifies degradation under imperfect shuffling. The result isolates exchangeable covariate arrival as enough to recover the transductive logarithmic rate without randomizing the labels or revealing the final Gram matrix.
+\end{abstract}
+
+\section{INTRODUCTION}
+
+In online linear regression, the learner observes a covariate $x_t$, predicts $\widehat y_t$, and then sees a bounded label $y_t\in[-B,B]$. Its square-loss regret to $u\in\R^d$ is
+\[
+ \Reg_T(u)=\sum_{t=1}^T(\widehat y_t-y_t)^2
+ -\sum_{t=1}^T(\langle u,x_t\rangle-y_t)^2.
+\]
+A bound is \emph{doubly uniform} if it depends on neither $\|u\|$ nor the scale of the covariates. This is a demanding but natural invariance: rescaling a feature and inversely rescaling its coefficient should not change the statistical problem.
+
+The sequential and transductive answers differ. If the final Gram matrix is known in advance, logarithmic doubly-uniform regret is possible with the optimal leading term $B^2d\log T$ \citep{bartlett2015minimax,gaillard2019uniform}. With sequentially revealed covariates, \citet{chen2026self} recently proved a dimension-dependent phase transition. The one-dimensional problem has logarithmic regret, while every dimension above one permits linear regret under adaptive covariates. Their smooth-density condition recovers a $\widetilde O(B^2\sqrt{dC_{\rm cov}T})$ guarantee, including the i.i.d. endpoint $C_{\rm cov}=1$.
+
+We identify a substantially sharper endpoint. Fix any labeled multiset of covariates and reveal a uniform random permutation. Only the covariates are shuffled. After seeing the current covariate and prediction, an adversary may still choose the label using the entire transcript. This \emph{feature-random-order} model is stronger than standard random-order online optimization, which permutes complete loss functions and therefore labels as well \citep{garber2020online,sherman2021optimal,bernasconi2025online}. Nevertheless, for $r\ge1$, the elementary unregularized Vovk--Azoury--Warmuth (VAW) forecaster achieves
+\begin{align}
+ \E\sup_u\Reg_T(u)
+ &\le B^2\sum_{t=1}^T\frac{\min(r,t)}t\notag\\[-2pt]
+ &=B^2\{r+r(H_T-H_r)\},
+ \label{eq:intro-bound}
+\end{align}
+where $r$ is the final design rank. The guarantee is scale-free, comparator-free, condition-number-free, and valid in an arbitrary Hilbert space after replacing dimension by algebraic Gram rank.
+
+\begin{table}[t]
+\caption{Doubly-uniform square-loss regret. In our model only covariates are randomly ordered and labels may be adaptive. Logarithms and confidence terms are suppressed.}
+\label{tab:phase}
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lll@{}}
+\toprule
+covariate information & assumptions & regret \\
+\midrule
+sequential, $d>1$ & adaptive & $\Theta(B^2T)$ \\
+sequential & smooth density & $\widetilde O(B^2\sqrt{dC_{\rm cov}T})$ \\
+final Gram known & none & $B^2d\log T+O(1)$ \\
+random order & none & $B^2r\log(eT/r)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The main technical statement is stronger than an expectation bound. Write
+\[
+ V_t=\sum_{s\le t}x_sx_s^\top,
+ \qquad h_t=x_t^\top V_t^\dagger x_t,
+\]
+where $\dagger$ denotes the Moore--Penrose inverse. For every fixed multiset, the random-order leverage sum $S_T=\sum_t h_t$ satisfies
+\begin{equation}
+ \E e^{\lambda S_T}
+ \le \prod_{t=1}^T\left[1+\frac{\min(r,t)}{t}(e^\lambda-1)\right]
+ \quad(\lambda\ge0).
+ \label{eq:intro-mgf}
+\end{equation}
+The right side is the moment generating function of a Poisson-binomial random variable. A backward deletion argument proves the bound without martingale increments or matrix concentration. It also gives an exact expectation in terms of the average rank of a uniformly sampled subset.
+
+Expected $O(d\log T)$ online leverage under random row order was observed by \citet{cohen2020online}, based on a uniform-subset identity from \citet{cohen2015dimensionality}. Our contribution is not that expectation estimate alone. It is the distributional domination, its sharpness, and the resulting exact-regret theorem under adaptive labels. Geometrically separated scalar covariates make $S_T$ converge to the number of records in a random permutation, exactly the Bernoulli law in \eqref{eq:intro-mgf} for $r=1$. Balanced repetitions of $r$ coordinate vectors give $S_T=rH_{T/r}$ for every ordering. A separate lower bound shows that no algorithm can improve the order in \eqref{eq:intro-bound}, including its leading logarithmic constant asymptotically.
+
+Our result also delineates nearby random-order work. Batch-to-online regression results randomize complete examples and give approximate regret \citep{dong2023batch,sakaue2026sensitivity}. Random-order convex optimization assumes bounded domains and geometric regularity of the loss sequence \citep{garber2020online,sherman2021optimal}. Online row sampling controls adaptive streams using condition numbers or arithmetic restrictions \citep{goranci2026sparsification}. None yields ordinary comparator-uniform regression regret when labels remain adaptive.
+
+\paragraph{Contributions.}
+First, we prove the Poisson-binomial Laplace domination and Bennett concentration of random-order online leverage. Second, we combine it with a pathwise VAW inequality to obtain high-probability doubly-uniform regret against adaptive labels. Third, we establish minimax sharpness and distributional sharpness. Fourth, we give exact rank-profile, Hilbert-space, and imperfect-shuffle extensions.
+
+\section{MODEL AND FORECASTER}
+\label{sec:model}
+
+Fix labeled covariates $\mathcal X=(x_1,\ldots,x_T)$ in $\R^d$. Repetitions and zero vectors are allowed. Nature draws a uniform permutation $\pi$ of $[T]$. At round $t$, the learner observes $X_t=x_{\pi_t}$ and outputs $\widehat y_t$. An adversary then chooses $y_t\in[-B,B]$. The choice may depend on the learner, the revealed covariates, all earlier labels, and the current prediction. Our upper bound is pathwise in the labels, so it even allows dependence on the unrevealed permutation.
+
+Let
+\[
+ V_t=\sum_{s=1}^tX_sX_s^\top,
+ \qquad b_{t-1}=\sum_{s<t}y_sX_s.
+\]
+The unregularized VAW prediction, clipped to the label interval, is
+\begin{equation}
+ \widehat y_t=\clip_{[-B,B]}\bigl(X_t^\top V_t^\dagger b_{t-1}\bigr).
+ \label{eq:vaw}
+\end{equation}
+Equivalently, before clipping, it is the prediction of any minimizer of
+\[
+ \langle u,X_t\rangle^2+
+ \sum_{s<t}(\langle u,X_s\rangle-y_s)^2.
+\]
+The prediction is unique even if the minimizer is not. A rank-revealing factorization inside the observed span uses $O(dr_t+r_t^2)$ storage and $O(dr_t+r_t^2)$ arithmetic on round $t$, where $r_t=\rank(V_t)$. These are standard VAW implementation costs and are not the source of the statistical improvement.
+
+The following standard forward-algorithm inequality is the only regression-specific ingredient. We include a proof in Appendix~\ref{app:vaw}.
+
+\begin{lemma}[Pathwise VAW inequality]
+\label{lem:vaw}
+For every deterministic sequence $(X_t,y_t)$ with $|y_t|\le B$, the predictor \eqref{eq:vaw} satisfies, simultaneously for all $u\in\R^d$,
+\begin{equation}
+ \Reg_T(u)\le \sum_{t=1}^T y_t^2h_t
+ \le B^2\sum_{t=1}^Th_t,
+ \qquad h_t=X_t^\top V_t^\dagger X_t.
+ \label{eq:vaw-bound}
+\end{equation}
+\end{lemma}
+
+This inequality is implicit in the almost-unregularized analysis of \citet[Theorem 11]{gaillard2019uniform}. Its value here is that all randomness is confined to the covariate-only quantity $S_T=\sum_t h_t$.
+
+\section{RANDOM-ORDER ONLINE LEVERAGE}
+\label{sec:leverage}
+
+Let $r=\rank(V_T)$ and define, for $r\ge1$,
+\begin{align}
+ \mu_{r,T}&=\sum_{t=1}^T\frac{\min(r,t)}t
+ =r+r(H_T-H_r),
+ \label{eq:mu}\\
+ v_{r,T}&=\sum_{t=r+1}^T\frac rt\left(1-\frac rt\right).
+ \label{eq:variance}
+\end{align}
+For $r=0$, set both quantities to zero.
+
+\begin{theorem}[Poisson-binomial domination]
+\label{thm:mgf}
+For every fixed labeled covariate multiset and every $\lambda\ge0$,
+\begin{equation}
+ \E_\pi e^{\lambda S_T}
+ \le e^{\lambda r}\prod_{t=r+1}^T
+ \left(1-\frac rt+\frac rt e^\lambda\right).
+ \label{eq:mgf}
+\end{equation}
+Thus $S_T$ is dominated in Laplace transform by
+\begin{align*}
+ Z_{r,T}&=r+\sum_{t=r+1}^TZ_t,
+ &Z_t&\sim\operatorname{Bernoulli}(r/t),\\[-2pt]
+ &&Z_t&\mathrel{\perp}\!\!\!\perp Z_s\quad(t\ne s).
+\end{align*}
+Consequently, $\E S_T\le\mu_{r,T}$ and, for every $s>0$,
+\begin{equation}
+ \Pp\{S_T\ge\mu_{r,T}+s\}
+ \le \exp\{-v_{r,T}\,\psi(s/v_{r,T})\},
+ \label{eq:bennett}
+\end{equation}
+where $\psi(a)=(1+a)\log(1+a)-a$. If $v_{r,T}=0$, the probability in \eqref{eq:bennett} is zero. In particular, with probability at least $1-\delta$,
+\begin{equation}
+ S_T\le\mu_{r,T}+\sqrt{2v_{r,T}\log(1/\delta)}
+ +\frac13\log(1/\delta).
+ \label{eq:bernstein}
+\end{equation}
+\end{theorem}
+
+\paragraph{Proof idea.}
+Generate the permutation backward. Given the labeled set $A_t$ occupying the first $t$ positions, choose its last index $I_t$ uniformly and delete it. With $V(A)=\sum_{i\in A}x_ix_i^\top$,
+\begin{align}
+ \E[h_t\mid A_t]
+ &=\frac1t\sum_{i\in A_t}x_i^\top V(A_t)^\dagger x_i\notag\\
+ &=\frac{\rank V(A_t)}t
+ \le\frac{\min(r,t)}t.
+ \label{eq:backward-mean}
+\end{align}
+Each leverage lies in $[0,1]$. The exponential chord bound
+$e^{\lambda z}\le1+z(e^\lambda-1)$ and induction over the deletion recursion yield \eqref{eq:mgf}. Standard Bernoulli Bennett bounds give \eqref{eq:bennett}. Appendix~\ref{app:mgf} gives the full argument.
+
+The backward identity also preserves the detailed geometry discarded by the rank envelope.
+
+\begin{proposition}[Exact rank profile]
+\label{prop:profile}
+If $A_t$ is a uniform labeled $t$-subset of $[T]$, then
+\begin{equation}
+ \E_\pi S_T
+ =\sum_{t=1}^T\frac1t
+ \E_{A_t}\rank\{x_i:i\in A_t\}.
+ \label{eq:profile}
+\end{equation}
+The right side can be strictly below $\mu_{r,T}$.
+\end{proposition}
+
+\begin{proposition}[Sharpness]
+\label{prop:sharpness}
+Theorem~\ref{thm:mgf} is sharp in two complementary senses.
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item For scalar covariates $x_i=M^i$, as $M\to\infty$, $S_T$ converges almost surely to the number of upper records in $\pi$. Hence its moment generating function converges to \eqref{eq:mgf} with $r=1$.
+\item If $T=rn$ and the multiset contains $n$ copies of every coordinate vector $e_1,\ldots,e_r$, then $S_T=rH_n$ for every permutation.
+\end{enumerate}
+\end{proposition}
+
+Part one shows that no uniformly smaller distributional proxy is possible, already in dimension one. Part two shows that the $r\log(T/r)$ scale does not arise from ill-conditioning or a rare ordering.
+
+The contrast with adversarial arrival is already maximal for the first construction. If $x_i=M^i$ are presented in increasing order, every $h_t\to1$ and $S_T\to T$ although the rank is one. Uniform order turns the same instance into a record process with mean $H_T$. Random arrival controls exactly the repeated scale expansions that defeat an unregularized sequential bound.
+
+\section{DOUBLY-UNIFORM REGRET}
+\label{sec:regret}
+
+Combining two pathwise statements immediately handles adaptive labels.
+
+\begin{corollary}[Feature-random-order regret]
+\label{cor:regret}
+For every fixed covariate multiset and every bounded, possibly adaptive label strategy, VAW satisfies
+\begin{align}
+ \E_\pi\sup_{u\in\R^d}\Reg_T(u)
+ &\le B^2\mu_{r,T},
+ \label{eq:expected-regret}\\
+ \sup_u\Reg_T(u)
+ &\le B^2\bigl\{\mu_{r,T}\notag\\[-2pt]
+ &\quad+\sqrt{2v_{r,T}\log(1/\delta)}
+ +\tfrac13\log(1/\delta)\bigr\}
+ \label{eq:hp-regret}
+\end{align}
+with probability at least $1-\delta$ over the permutation. The probability statement is simultaneous over all possible bounded label realizations.
+\end{corollary}
+
+The supremum in \eqref{eq:expected-regret} is harmless because Lemma~\ref{lem:vaw} holds simultaneously for every comparator. Since $H_T-H_r\le\log(T/r)$,
+\[
+ \mu_{r,T}\le r\{1+\log(T/r)\}.
+\]
+No upper bound on $\|x_t\|$, $\|u\|$, the condition number, or the ambient dimension appears.
+
+The result extends verbatim to a real Hilbert space $\cH$. For a fixed horizon, all covariates lie in the finite-dimensional span $E=\operatorname{span}\{x_1,\ldots,x_T\}$. Projecting a comparator onto $E$ preserves every prediction, and the proof runs inside $E$. Thus $r=\dim E$, equivalently the algebraic rank of the kernel Gram matrix. No kernel diagonal or effective-dimension bound is required.
+
+Every finite exchangeable covariate sequence is an immediate corollary. Conditional on its unordered labeled multiset, its order is uniform. This includes i.i.d. covariates. Labels may still be selected after each covariate is seen, so this is not a stochastic-label assumption.
+
+The guarantee can also be made simultaneous over all horizons. Let
+$r_k=\rank(V_k)$ and let $\mu_{r_k,k}$ and $v_{r_k,k}$ be defined as in
+\eqref{eq:mu}--\eqref{eq:variance}. Set
+$L_k=\log\{\pi^2k^2/(6\delta)\}$. A union bound applied conditionally on each unordered prefix gives, with probability at least $1-\delta$, for every $k\le T$,
+\begin{equation}
+ \sup_u\Reg_k(u)\le B^2\left\{\mu_{r_k,k}
+ +\sqrt{2v_{r_k,k}L_k}+\frac{L_k}{3}\right\}.
+ \label{eq:anytime}
+\end{equation}
+Thus neither the horizon nor the eventual rank is needed by the forecaster or by the data-dependent certificate.
+
+\subsection{Minimax lower bound}
+
+The logarithmic rate is unavoidable for every algorithm, even if the complete covariate schedule is revealed in advance.
+
+\begin{theorem}[Lower bound]
+\label{thm:lower}
+Fix $1\le r\le\min(d,T)$ and let $n=\lfloor T/r\rfloor$. For every online regression algorithm and every $\alpha>0$, there is a rank-$r$ covariate multiset and a bounded label strategy such that
+\begin{equation}
+ \E\sup_u\Reg_T(u)
+ \ge \frac{2\alpha}{2\alpha+1}B^2r
+ \left(1+\sum_{m=0}^{n-1}\frac1{2\alpha+m}\right).
+ \label{eq:lower}
+\end{equation}
+The expectation includes the learner's randomness and the uniform covariate order. In particular, the minimax rate is
+$\Theta(B^2r\log(eT/r))$. If $n\to\infty$ and then $\alpha\to\infty$ slowly enough, the lower bound is
+$(1-o(1))B^2r\log n$.
+\end{theorem}
+
+The construction uses $n$ copies of each coordinate vector and pads with zeros. Independently by coordinate, draw $p_j\sim\operatorname{Beta}(\alpha,\alpha)$ and labels with values $\pm B$ and mean $B(2p_j-1)$. Posterior variance forces prediction cost, while the hindsight comparator is the sample mean. The exact conjugate calculation is in Appendix~\ref{app:lower}. Averaging produces a deterministic adaptive label strategy, so the Bayesian device does not enlarge the adversary class.
+
+\section{IMPERFECT SHUFFLING}
+\label{sec:imperfect}
+
+The distributional theorem quantifies how much randomness in the order is needed. Let $U$ be uniform on the $T!$ permutations of the labeled occurrences, and let $Q$ be any ordering law. Write $D=\KL(Q\|U)=\log(T!)-H(Q)$.
+
+\begin{corollary}[Entropy-deficient shuffles]
+\label{cor:entropy}
+For every $Q\ll U$,
+\begin{equation}
+ \E_Q S_T\le\mu_{r,T}+\sqrt{2v_{r,T}D}+\frac D3.
+ \label{eq:entropy-mean}
+\end{equation}
+If $D_\infty(Q\|U)\le K$, then with $Q$-probability at least $1-\delta$,
+\begin{equation}
+ S_T\le\mu_{r,T}
+ +\sqrt{2v_{r,T}\{K+\log(1/\delta)\}}
+ +\frac{K+\log(1/\delta)}3.
+ \label{eq:entropy-tail}
+\end{equation}
+Both bounds transfer to regret after multiplication by $B^2$.
+\end{corollary}
+
+The proof applies the entropy variational formula to the sub-gamma consequence of \eqref{eq:mgf}. This provides a continuous interpolation between a uniform shuffle and a concentrated ordering law. Total entropy alone controls the mean. A worst-case density ratio is required for a high-probability transfer.
+
+\section{RELATED WORK AND LIMITS}
+
+The VAW and nonlinear ridge families originate in early work on online regression \citep{vovk2001competitive,azoury2001relative}. \citet{bartlett2015minimax} characterized fixed-design minimax regret, and \citet{gaillard2019uniform} obtained the optimal $B^2d\log T$ leading term when the design is known. For sequential designs, their scale-invariant bound contains a feature-dependent remainder. \citet{chen2026self} proved that this obstruction is fundamental in $d>1$ for fully adaptive covariates, and derived square-root regret under smooth conditional covariate laws. Our logarithmic bound identifies random arrival of a fixed feature multiset as enough to remove the obstruction.
+
+Random-order online optimization usually shuffles full loss functions. Logarithmic guarantees there use bounded domains, Lipschitzness, smoothness, and cumulative strong convexity \citep{garber2020online,sherman2021optimal}. General reductions compare random-order and i.i.d. online learning \citep{bernasconi2025online}. The batch-to-online method of \citet{dong2023batch} gives $\epsilon$-approximate regression regret by randomizing complete examples. Recent refinements explain why its unsquared embedding error does not directly yield additive small-loss regret \citep{sakaue2026sensitivity}. In contrast, our labels can react to the current prediction and our regret is ordinary square-loss regret.
+
+Online leverage is central to spectral row sampling. \citet{cohen2020online} note the expected $O(d\log T)$ random-order score sum. Under adaptive streams, \citet{goranci2026sparsification} control related scores using an online condition number, or polynomially bounded integer entries for a horizon-only bound. Our contribution neither replaces those sparsification results nor their matrix concentration. It gives a sharp scalar distribution theorem under random order and turns it into an adaptive-label regret result.
+
+Stochastic online regression permits arbitrary predictable covariates under realizability, sub-Gaussian noise, and bounded design and parameter assumptions \citep{ouhamma2021stochastic}. Self-directed fixed-design regression asks the learner to choose an order under a random realizable target \citep{kontonis2023gain}. These assumptions and objectives differ from doubly-uniform adversarial-label regret.
+
+Three limitations are deliberate. Randomness is imposed on covariate arrival, so the theorem does not contradict the adaptive-design lower bound. Rank may equal $T$ in a rich kernel space, in which case the bound becomes linear. Controlling effective dimension without a scale or regularization parameter would conflict with the invariance being sought. Finally, the condition-number-free guarantee is statistical and assumes exact arithmetic. Stable numerical rank decisions may still require a tolerance or regularization.
+
+\section{CONCLUSION}
+
+A random covariate order restores the same logarithmic doubly-uniform rate previously associated with advance design knowledge. The mechanism is exact: backward deletion converts each current leverage score into a rank-controlled Bernoulli surrogate. Because VAW regret is pathwise below the leverage sum, labels need not be randomized or stochastic. The resulting phase transition separates the role of feature arrival from assumptions on outcomes and supplies sharp expectation, concentration, and minimax guarantees without geometric normalization.
+
+\begingroup
+\small
+\setlength{\bibsep}{1pt}
+\bibliography{references}
+\endgroup
+
+\clearpage
+
+\clearpage
+\appendix
+\input{appendix}
+
+\end{document}
