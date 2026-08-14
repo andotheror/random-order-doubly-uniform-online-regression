@@ -1,0 +1,258 @@
+\section{THE PATHWISE VAW INEQUALITY}
+\label{app:vaw}
+
+We prove Lemma~\ref{lem:vaw} by taking the zero-regularization limit of the forward algorithm. This also verifies that singular and rank-increasing designs cause no difficulty.
+
+Fix $\lambda>0$ and write
+\[
+ A_t=\lambda I+\sum_{s\le t}X_sX_s^\top,
+ \qquad b_t=\sum_{s\le t}y_sX_s.
+\]
+Consider the un-clipped prediction
+\[
+ p_{t,\lambda}=X_t^\top A_t^{-1}b_{t-1},
+ \qquad h_{t,\lambda}=X_t^\top A_t^{-1}X_t.
+\]
+The quadratic potential
+\[
+ Q_t(u)=\lambda\|u\|^2+
+ \sum_{s\le t}(y_s-\langle u,X_s\rangle)^2
+\]
+has minimum
+\begin{equation}
+ \min_u Q_t(u)=\sum_{s\le t}y_s^2-b_t^\top A_t^{-1}b_t.
+ \label{eq:q-min}
+\end{equation}
+Since $A_t=A_{t-1}+X_tX_t^\top$, the Sherman--Morrison formula, expressed in terms of $A_t^{-1}$, gives
+\[
+ b_{t-1}^\top A_{t-1}^{-1}b_{t-1}
+ =b_{t-1}^\top A_t^{-1}b_{t-1}
+ +\frac{p_{t,\lambda}^2}{1-h_{t,\lambda}}.
+\]
+Here $0\le h_{t,\lambda}<1$. Substituting this identity into \eqref{eq:q-min} yields
+\[
+ \min Q_t-\min Q_{t-1}
+ =\frac{\{(1-h_{t,\lambda})y_t-p_{t,\lambda}\}^2}
+ {1-h_{t,\lambda}}.
+\]
+Direct expansion now shows
+\begin{align}
+ (y_t-p_{t,\lambda})^2-
+ (\min Q_t-\min Q_{t-1})
+ &=h_{t,\lambda}y_t^2\notag\\[-2pt]
+ &\quad-\frac{h_{t,\lambda}p_{t,\lambda}^2}
+ {1-h_{t,\lambda}}\notag\\[-2pt]
+ &\le h_{t,\lambda}y_t^2.
+ \label{eq:forward-one-step}
+\end{align}
+Summing and using $\min Q_0=0$ gives, for every $u$,
+\begin{equation}
+ \sum_{t=1}^T(y_t-p_{t,\lambda})^2
+ \le\sum_{t=1}^T(y_t-\langle u,X_t\rangle)^2
+ +\lambda\|u\|^2+\sum_{t=1}^Ty_t^2h_{t,\lambda}.
+ \label{eq:regularized-forward}
+\end{equation}
+
+Let $V_t=\sum_{s\le t}X_sX_s^\top$. Both $X_t$ and $b_{t-1}$ lie in $\operatorname{range}(V_t)$. Spectral decomposition on this range gives
+\[
+ p_{t,\lambda}\longrightarrow X_t^\top V_t^\dagger b_{t-1},
+ \qquad
+ h_{t,\lambda}\longrightarrow X_t^\top V_t^\dagger X_t.
+\]
+There are finitely many rounds, so we may take $\lambda\downarrow0$ in \eqref{eq:regularized-forward}. Clipping a prediction to $[-B,B]$ cannot increase its square loss against $y_t\in[-B,B]$. This proves \eqref{eq:vaw-bound}.
+
+\section{LAPLACE DOMINATION AND CONCENTRATION}
+\label{app:mgf}
+
+For a labeled index set $A\subseteq[T]$, define
+\[
+ V(A)=\sum_{i\in A}x_ix_i^\top,
+ \qquad \ell_i(A)=x_i^\top V(A)^\dagger x_i.
+\]
+If $X_A$ is the matrix with rows $x_i^\top$, then
+$X_AV(A)^\dagger X_A^\top$ is the orthogonal projector onto the column space of $X_A$. Therefore
+\begin{equation}
+ 0\le\ell_i(A)\le1,
+ \qquad
+ \sum_{i\in A}\ell_i(A)=\rank V(A).
+ \label{eq:leverage-trace}
+\end{equation}
+
+Generate a uniform permutation backward. Start from $A_T=[T]$. Conditional on $A_t$, select $I_t$ uniformly in $A_t$, put $\pi_t=I_t$, and set $A_{t-1}=A_t\setminus\{I_t\}$. This construction is uniform because every deletion sequence has probability $1/T!$. Moreover,
+\[
+ h_t=\ell_{I_t}(A_t).
+\]
+Equation \eqref{eq:leverage-trace} proves the conditional identity
+\[
+ \E[h_t\mid A_t]=\frac{\rank V(A_t)}t.
+\]
+
+We next retain dependence across all deletion steps. For $A\subseteq[T]$, let
+\[
+ F(A)=\E\left[
+ \exp\left\{\lambda\sum_{s=1}^{|A|}h_s\right\}
+ \mathrel{\Big|} A_{|A|}=A\right].
+\]
+Backward deletion gives the exact recursion
+\begin{equation}
+ F(A)=\frac1{|A|}\sum_{i\in A}
+ e^{\lambda\ell_i(A)}F(A\setminus\{i\}).
+ \label{eq:deletion-recursion}
+\end{equation}
+Fix the final rank $r$. We prove by induction on $t=|A|$ that, for every reachable $A$,
+\begin{equation}
+ F(A)\le\prod_{s=1}^t
+ \left[1+\frac{\min(r,s)}s(e^\lambda-1)\right].
+ \label{eq:induction-claim}
+\end{equation}
+The empty-set case is immediate. The inductive bound on every child in \eqref{eq:deletion-recursion} is the same deterministic product through $t-1$. For $z\in[0,1]$ and $\lambda\ge0$, convexity gives
+\[
+ e^{\lambda z}\le1+z(e^\lambda-1).
+\]
+Thus \eqref{eq:leverage-trace} and $\rank V(A)\le\min(r,t)$ show
+\[
+ \frac1t\sum_{i\in A}e^{\lambda\ell_i(A)}
+ \le1+\frac{\min(r,t)}t(e^\lambda-1).
+\]
+This closes the induction. At $A=[T]$, the product in \eqref{eq:induction-claim} is exactly the right side of \eqref{eq:mgf}.
+
+Differentiating the inequality at $\lambda=0$ from the right gives
+$\E S_T\le\mu_{r,T}$. For concentration, let
+$Z_{r,T}=r+\sum_{t=r+1}^TZ_t$ be the independent Bernoulli proxy in Theorem~\ref{thm:mgf}. The standard Bennett bound for centered Bernoulli variables gives
+\begin{equation}
+ \log\E e^{\lambda(Z_{r,T}-\mu_{r,T})}
+ \le v_{r,T}(e^\lambda-1-\lambda),
+ \qquad \lambda\ge0.
+ \label{eq:bernoulli-mgf}
+\end{equation}
+Laplace domination implies the same upper bound for $S_T-\mu_{r,T}$. Optimizing Chernoff's inequality at
+$\lambda=\log(1+s/v_{r,T})$ proves \eqref{eq:bennett}. Finally,
+\[
+ e^\lambda-1-\lambda
+ \le\frac{\lambda^2}{2(1-\lambda/3)},
+ \qquad 0\le\lambda<3,
+\]
+and the usual sub-gamma inversion proves \eqref{eq:bernstein}.
+
+\subsection{Exact expectation and sharpness}
+
+For every $t$, the backward set $A_t$ is a uniform $t$-subset. Taking expectations in \eqref{eq:backward-mean} and summing proves Proposition~\ref{prop:profile}.
+
+For the second part of Proposition~\ref{prop:sharpness}, suppose coordinate $j$ has appeared $k$ times including the current round. The current Gram matrix has eigenvalue $k$ in direction $e_j$, so the current leverage is $1/k$. Every coordinate therefore contributes $\sum_{k=1}^n1/k=H_n$, regardless of interleaving.
+
+For the first part, take scalar $x_i=M^i$ with distinct indices $i$. If $\pi_t$ is the largest index among $\pi_1,\ldots,\pi_t$, then
+\[
+ h_t=\frac{M^{2\pi_t}}{\sum_{s\le t}M^{2\pi_s}}\longrightarrow1.
+\]
+Otherwise the denominator contains a term larger by at least a factor $M^2$, and $h_t\to0$. Hence $S_T$ converges pointwise on the finite permutation space to the number of upper records. The relative insertion ranks of a uniform permutation are independent, with the rank at time $t$ uniform on $[t]$. Its record indicators are therefore independent Bernoulli variables with means $1/t$. Bounded convergence proves convergence of every moment generating function to \eqref{eq:mgf} for $r=1$.
+
+\subsection{Hilbert-space reduction}
+
+Let $x_1,\ldots,x_T$ belong to a real Hilbert space $\cH$ and let
+$E=\operatorname{span}\{x_1,\ldots,x_T\}$. This subspace is finite dimensional and closed. If $P_E$ is its orthogonal projector, then
+$\langle u,x_t\rangle=\langle P_Eu,x_t\rangle$ for every $u\in\cH$. The prediction problem and comparator loss therefore depend only on $P_Eu$. Choose an orthonormal basis of $E$ and identify it with $\R^r$. The VAW update, all leverage scores, and every proof above are unchanged. Since the nonzero eigenvalues of the operator Gram matrix and the $T\times T$ kernel Gram matrix agree, $r$ is the algebraic kernel Gram rank.
+
+\subsection{Simultaneous horizons}
+
+Fix $k\le T$ and condition on the labeled set $A_k$ occupying the first $k$ positions. Its internal order is uniform, and its rank is the now deterministic value $r_k$. Theorem~\ref{thm:mgf} and Lemma~\ref{lem:vaw}, applied with failure probability $\delta_k=6\delta/(\pi^2k^2)$, show that \eqref{eq:anytime} fails at this $k$ with conditional probability at most $\delta_k$. The same bound holds after removing the conditioning. Since $\sum_{k\ge1}\delta_k=\delta$, a union bound proves \eqref{eq:anytime} simultaneously for all $k\le T$.
+
+\section{THE MINIMAX LOWER BOUND}
+\label{app:lower}
+
+We prove Theorem~\ref{thm:lower}. Let $n=\lfloor T/r\rfloor$. Use $n$ copies of each of $e_1,\ldots,e_r$ and $T-rn$ zero covariates. Give the zero covariates label zero. We may reveal the complete future covariate schedule to the learner, since this only makes the problem easier.
+
+For every coordinate $j$, draw independently
+\[
+ p_j\sim\operatorname{Beta}(\alpha,\alpha).
+\]
+At each occurrence of $e_j$, independently conditional on $p_j$, set
+\[
+ Y=B(2W-1),
+ \qquad W\sim\operatorname{Bernoulli}(p_j).
+\]
+Information from other coordinates is independent of $p_j$. Consequently, after $m$ earlier labels on coordinate $j$, the posterior mean of $Y$ minimizes conditional expected square loss for the next label. For every learner, its expected loss on that occurrence is at least
+\begin{align}
+ \E\operatorname{Var}(Y\mid Y_{1:m})
+ &=\E[4B^2p_j(1-p_j)]\notag\\[-2pt]
+ +\E\operatorname{Var}(B(2p_j-1)\mid Y_{1:m}).
+ \label{eq:bayes-decomposition}
+\end{align}
+
+The two terms have closed forms. A symmetric beta variable satisfies
+\begin{equation}
+ \E[4B^2p_j(1-p_j)]
+ =\frac{2\alpha}{2\alpha+1}B^2.
+ \label{eq:irreducible}
+\end{equation}
+For completeness, $\operatorname{Var}(p_j)=1/[4(2\alpha+1)]$. If $K_m$ is the number of positive labels among $m$, the posterior mean of $p_j$ is
+$(\alpha+K_m)/(2\alpha+m)$, while the beta-binomial variance is
+\[
+ \operatorname{Var}(K_m)=
+ \frac{m(2\alpha+m)}{4(2\alpha+1)}.
+\]
+The law of total variance therefore gives
+\begin{equation}
+ \E\operatorname{Var}(B(2p_j-1)\mid Y_{1:m})
+ =\frac{2\alpha}{(2\alpha+1)(2\alpha+m)}B^2.
+ \label{eq:posterior-variance}
+\end{equation}
+
+Summing \eqref{eq:bayes-decomposition} over $m=0,\ldots,n-1$ lower bounds the learner's loss on coordinate $j$. The best constant prediction in hindsight is the sample mean. Conditional on $p_j$, its residual sum of squares has expectation
+$(n-1)4B^2p_j(1-p_j)$. After averaging, subtracting this comparator loss leaves one copy of \eqref{eq:irreducible} plus the sum of \eqref{eq:posterior-variance}. Summing over the $r$ independent coordinates proves \eqref{eq:lower}.
+
+This argument directly covers randomized learners by including their private randomness in the outer expectation. It uses a randomized label strategy only as an averaging device. Pre-sample $p_j$ and an infinite label sequence for every coordinate. Each seed specifies a deterministic, nonanticipating strategy whose next label depends only on the current coordinate and its occurrence count. Since the average over seeds satisfies \eqref{eq:lower}, at least one deterministic seed does as well.
+
+Taking $\alpha=1$ reduces \eqref{eq:lower} to
+\[
+ \frac23B^2rH_{n+1},
+\]
+which is a universal-constant lower bound of order
+$B^2r\log(eT/r)$. If $n\to\infty$, choose for example
+$\alpha=\max\{1,\lceil\log n\rceil\}$. Then
+\[
+ \frac{2\alpha}{2\alpha+1}\to1,
+ \qquad
+ \sum_{m=0}^{n-1}\frac1{2\alpha+m}
+ =(1-o(1))\log n.
+\]
+This proves the leading-constant statement.
+
+\section{ENTROPY TRANSPORT}
+\label{app:entropy}
+
+We prove Corollary~\ref{cor:entropy}. Equations \eqref{eq:mgf} and \eqref{eq:bernoulli-mgf} imply, under the uniform law $U$,
+\begin{equation}
+ \log\E_U e^{\lambda(S_T-\mu_{r,T})}
+ \le\frac{v_{r,T}\lambda^2}{2(1-\lambda/3)},
+ \qquad 0<\lambda<3.
+ \label{eq:subgamma}
+\end{equation}
+The entropy variational inequality gives
+\[
+ \lambda(\E_QS_T-\mu_{r,T})
+ \le \KL(Q\|U)+
+ \log\E_Ue^{\lambda(S_T-\mu_{r,T})}.
+\]
+If $v_{r,T}>0$ and $D=\KL(Q\|U)$, choose
+\[
+ \lambda=\frac{\sqrt{2D/v_{r,T}}}
+ {1+\frac13\sqrt{2D/v_{r,T}}}.
+\]
+Substitution proves \eqref{eq:entropy-mean}. The cases $D=0$ or $v_{r,T}=0$ follow by continuity. Since $U$ assigns mass $1/T!$ to every labeled permutation,
+$D=\log(T!)-H(Q)$.
+
+For the tail, $D_\infty(Q\|U)\le K$ means
+$Q(E)\le e^KU(E)$ for every event $E$. Apply \eqref{eq:bernstein} under $U$ with failure probability $\delta e^{-K}$. This gives \eqref{eq:entropy-tail}. Lemma~\ref{lem:vaw} transfers both leverage statements to regret.
+
+\section{ADDITIONAL COMPARISONS}
+
+We record protocol details that distinguish Corollary~\ref{cor:regret} from nearby results.
+
+\paragraph{Complete-loss random order.}
+In the standard random-order model, an adversary fixes loss functions $f_1,\ldots,f_T$ and a uniform permutation decides which full loss appears at each round. For square loss, fixing $f_t(u)=(\langle u,x_t\rangle-y_t)^2$ couples the label to the shuffled covariate. Our model shuffles $x_t$ alone and permits $y_t$ to be selected after $\widehat y_t$. It therefore cannot be reduced to a complete-loss random-order theorem.
+
+\paragraph{Approximate versus ordinary regret.}
+The $\epsilon$-approximate regret of \citet{dong2023batch} compares online loss with $(1+\epsilon)$ times the offline loss. For regression, this introduces a multiplicative slack depending on the comparator's loss. Corollary~\ref{cor:regret} is additive ordinary regret and is uniform even when the comparator loss is arbitrarily large.
+
+\paragraph{Adaptive versus random-order leverage.}
+For an arbitrary row order, the unregularized online leverage sum can depend on scale ratios. Recent adaptive-stream sparsification bounds retain this dependence through an online condition number unless entries obey an arithmetic restriction \citep{goranci2026sparsification}. Proposition~\ref{prop:sharpness} shows why no such quantity is present under uniform order: even arbitrarily separated scales produce a universal record law.
