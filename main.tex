@@ -37,20 +37,12 @@
 \aistatsaddress{Johns Hopkins University}]
 
 \begin{abstract}\sloppy
-Online square-loss regression admits no sublinear regret bound that is simultaneously independent of the comparator norm and covariate scale in dimension above one when covariates are adaptive. We show that uniformly shuffling only the covariates changes the answer sharply, even if bounded labels remain fully adaptive. The unregularized Vovk--Azoury--Warmuth forecaster has expected regret at most
-$B^2\sum_{t\le T}\min(r,t)/t$, where $r$ is the final design rank. The result needs no norm, condition-number, distributional, or ambient-dimension bound. Its core is a distributional theorem for online leverage. Conditional on any fixed covariate multiset, the leverage sum is dominated in Laplace transform by
-$r+\sum_{t=r+1}^T\operatorname{Bernoulli}(r/t)$.
-This yields Bennett tails, an exact expected rank-profile formula, and kernelization by finite-span reduction. The domination is asymptotically exact in distribution already in one dimension. A Bayesian lower bound proves the minimax rate $\Theta(B^2r\log(eT/r))$ and recovers leading constant one in the large-block regime. Finally, entropy transport quantifies degradation under imperfect shuffling. The result isolates exchangeable covariate arrival as enough to recover the transductive logarithmic rate without randomizing the labels or revealing the final Gram matrix.
+Online square-loss regression admits no sublinear regret bound that is simultaneously independent of the comparator norm and covariate scale in dimension above one when covariates are adaptive. We show that uniformly shuffling only the covariates changes the answer sharply, even if bounded labels remain fully adaptive. The unregularized Vovk--Azoury--Warmuth forecaster has expected regret at most $B^2\sum_{t\le T}\min(r,t)/t$, where $r$ is the final design rank. The result needs no norm, condition-number, distributional, or ambient-dimension bound. Its core is a distributional theorem for online leverage. Conditional on any fixed covariate multiset, the leverage sum is dominated in Laplace transform by $r+\sum_{t=r+1}^T\operatorname{Bernoulli}(r/t)$. This yields Bennett tails, an exact expected rank-profile formula, and kernelization by finite-span reduction. The domination is asymptotically exact in distribution already in one dimension. A Bayesian lower bound proves the minimax rate $\Theta(B^2r\log(eT/r))$ and recovers leading constant one in the large-block regime. Finally, entropy transport quantifies degradation under imperfect shuffling. The result isolates exchangeable covariate arrival as enough to recover the transductive logarithmic rate without randomizing the labels or revealing the final Gram matrix.
 \end{abstract}
 
 \section{INTRODUCTION}
 
-In online linear regression, the learner observes a covariate $x_t$, predicts $\widehat y_t$, and then sees a bounded label $y_t\in[-B,B]$. Its square-loss regret to $u\in\R^d$ is
-\[
- \Reg_T(u)=\sum_{t=1}^T(\widehat y_t-y_t)^2
- -\sum_{t=1}^T(\langle u,x_t\rangle-y_t)^2.
-\]
-A bound is \emph{doubly uniform} if it depends on neither $\|u\|$ nor the scale of the covariates. This is a demanding but natural invariance: rescaling a feature and inversely rescaling its coefficient should not change the statistical problem.
+In online linear regression, the learner observes a covariate $x_t$, predicts $\widehat y_t$, and then sees a bounded label $y_t\in[-B,B]$. Its square-loss regret to $u\in\R^d$ is \[ \Reg_T(u)=\sum_{t=1}^T(\widehat y_t-y_t)^2 -\sum_{t=1}^T(\langle u,x_t\rangle-y_t)^2. \] A bound is \emph{doubly uniform} if it depends on neither $\|u\|$ nor the scale of the covariates. This is a demanding but natural invariance: rescaling a feature and inversely rescaling its coefficient should not change the statistical problem.
 
 The sequential and transductive answers differ. If the final Gram matrix is known in advance, logarithmic doubly-uniform regret is possible with the optimal leading term $B^2d\log T$ \citep{bartlett2015minimax,gaillard2019uniform}. With sequentially revealed covariates, \citet{chen2026self} recently proved a dimension-dependent phase transition. The one-dimensional problem has logarithmic regret, while every dimension above one permits linear regret under adaptive covariates. Their smooth-density condition recovers a $\widetilde O(B^2\sqrt{dC_{\rm cov}T})$ guarantee, including the i.i.d. endpoint $C_{\rm cov}=1$.
 
@@ -67,8 +59,7 @@ where $r$ is the final design rank. The guarantee is scale-free, comparator-free
 \caption{Doubly-uniform square-loss regret. In our model only covariates are randomly ordered and labels may be adaptive. Logarithms and confidence terms are suppressed.}
 \label{tab:phase}
 \centering
-\small
-\setlength{\tabcolsep}{3.5pt}
+\small \setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}lll@{}}
 \toprule
 covariate information & assumptions & regret \\
@@ -81,12 +72,7 @@ random order & none & $B^2r\log(eT/r)$ \\
 \end{tabular}
 \end{table}
 
-The main technical statement is stronger than an expectation bound. Write
-\[
- V_t=\sum_{s\le t}x_sx_s^\top,
- \qquad h_t=x_t^\top V_t^\dagger x_t,
-\]
-where $\dagger$ denotes the Moore--Penrose inverse. For every fixed multiset, the random-order leverage sum $S_T=\sum_t h_t$ satisfies
+The main technical statement is stronger than an expectation bound. Write \[ V_t=\sum_{s\le t}x_sx_s^\top, \qquad h_t=x_t^\top V_t^\dagger x_t, \] where $\dagger$ denotes the Moore--Penrose inverse. For every fixed multiset, the random-order leverage sum $S_T=\sum_t h_t$ satisfies
 \begin{equation}
  \E e^{\lambda S_T}
  \le \prod_{t=1}^T\left[1+\frac{\min(r,t)}{t}(e^\lambda-1)\right]
@@ -107,22 +93,12 @@ First, we prove the Poisson-binomial Laplace domination and Bennett concentratio
 
 Fix labeled covariates $\mathcal X=(x_1,\ldots,x_T)$ in $\R^d$. Repetitions and zero vectors are allowed. Nature draws a uniform permutation $\pi$ of $[T]$. At round $t$, the learner observes $X_t=x_{\pi_t}$ and outputs $\widehat y_t$. An adversary then chooses $y_t\in[-B,B]$. The choice may depend on the learner, the revealed covariates, all earlier labels, and the current prediction. Our upper bound is pathwise in the labels, so it even allows dependence on the unrevealed permutation.
 
-Let
-\[
- V_t=\sum_{s=1}^tX_sX_s^\top,
- \qquad b_{t-1}=\sum_{s<t}y_sX_s.
-\]
-The unregularized VAW prediction, clipped to the label interval, is
+Let \[ V_t=\sum_{s=1}^tX_sX_s^\top, \qquad b_{t-1}=\sum_{s<t}y_sX_s. \] The unregularized VAW prediction, clipped to the label interval, is
 \begin{equation}
  \widehat y_t=\clip_{[-B,B]}\bigl(X_t^\top V_t^\dagger b_{t-1}\bigr).
  \label{eq:vaw}
 \end{equation}
-Equivalently, before clipping, it is the prediction of any minimizer of
-\[
- \langle u,X_t\rangle^2+
- \sum_{s<t}(\langle u,X_s\rangle-y_s)^2.
-\]
-The prediction is unique even if the minimizer is not. A rank-revealing factorization inside the observed span uses $O(dr_t+r_t^2)$ storage and $O(dr_t+r_t^2)$ arithmetic on round $t$, where $r_t=\rank(V_t)$. These are standard VAW implementation costs and are not the source of the statistical improvement.
+Equivalently, before clipping, it is the prediction of any minimizer of \[ \langle u,X_t\rangle^2+ \sum_{s<t}(\langle u,X_s\rangle-y_s)^2. \] The prediction is unique even if the minimizer is not. A rank-revealing factorization inside the observed span uses $O(dr_t+r_t^2)$ storage and $O(dr_t+r_t^2)$ arithmetic on round $t$, where $r_t=\rank(V_t)$. These are standard VAW implementation costs and are not the source of the statistical improvement.
 
 The following standard forward-algorithm inequality is the only regression-specific ingredient. We include a proof in Appendix~\ref{app:vaw}.
 
@@ -190,8 +166,7 @@ Generate the permutation backward. Given the labeled set $A_t$ occupying the fir
  \le\frac{\min(r,t)}t.
  \label{eq:backward-mean}
 \end{align}
-Each leverage lies in $[0,1]$. The exponential chord bound
-$e^{\lambda z}\le1+z(e^\lambda-1)$ and induction over the deletion recursion yield \eqref{eq:mgf}. Standard Bernoulli Bennett bounds give \eqref{eq:bennett}. Appendix~\ref{app:mgf} gives the full argument.
+Each leverage lies in $[0,1]$. The exponential chord bound $e^{\lambda z}\le1+z(e^\lambda-1)$ and induction over the deletion recursion yield \eqref{eq:mgf}. Standard Bernoulli Bennett bounds give \eqref{eq:bennett}. Appendix~\ref{app:mgf} gives the full argument.
 
 The backward identity also preserves the detailed geometry discarded by the rank envelope.
 
@@ -241,20 +216,13 @@ For every fixed covariate multiset and every bounded, possibly adaptive label st
 with probability at least $1-\delta$ over the permutation. The probability statement is simultaneous over all possible bounded label realizations.
 \end{corollary}
 
-The supremum in \eqref{eq:expected-regret} is harmless because Lemma~\ref{lem:vaw} holds simultaneously for every comparator. Since $H_T-H_r\le\log(T/r)$,
-\[
- \mu_{r,T}\le r\{1+\log(T/r)\}.
-\]
-No upper bound on $\|x_t\|$, $\|u\|$, the condition number, or the ambient dimension appears.
+The supremum in \eqref{eq:expected-regret} is harmless because Lemma~\ref{lem:vaw} holds simultaneously for every comparator. Since $H_T-H_r\le\log(T/r)$, \[ \mu_{r,T}\le r\{1+\log(T/r)\}. \] No upper bound on $\|x_t\|$, $\|u\|$, the condition number, or the ambient dimension appears.
 
 The result extends verbatim to a real Hilbert space $\cH$. For a fixed horizon, all covariates lie in the finite-dimensional span $E=\operatorname{span}\{x_1,\ldots,x_T\}$. Projecting a comparator onto $E$ preserves every prediction, and the proof runs inside $E$. Thus $r=\dim E$, equivalently the algebraic rank of the kernel Gram matrix. No kernel diagonal or effective-dimension bound is required.
 
 Every finite exchangeable covariate sequence is an immediate corollary. Conditional on its unordered labeled multiset, its order is uniform. This includes i.i.d. covariates. Labels may still be selected after each covariate is seen, so this is not a stochastic-label assumption.
 
-The guarantee can also be made simultaneous over all horizons. Let
-$r_k=\rank(V_k)$ and let $\mu_{r_k,k}$ and $v_{r_k,k}$ be defined as in
-\eqref{eq:mu}--\eqref{eq:variance}. Set
-$L_k=\log\{\pi^2k^2/(6\delta)\}$. A union bound applied conditionally on each unordered prefix gives, with probability at least $1-\delta$, for every $k\le T$,
+The guarantee can also be made simultaneous over all horizons. Let $r_k=\rank(V_k)$ and let $\mu_{r_k,k}$ and $v_{r_k,k}$ be defined as in \eqref{eq:mu}--\eqref{eq:variance}. Set $L_k=\log\{\pi^2k^2/(6\delta)\}$. A union bound applied conditionally on each unordered prefix gives, with probability at least $1-\delta$, for every $k\le T$,
 \begin{equation}
  \sup_u\Reg_k(u)\le B^2\left\{\mu_{r_k,k}
  +\sqrt{2v_{r_k,k}L_k}+\frac{L_k}{3}\right\}.
@@ -275,9 +243,7 @@ Fix $1\le r\le\min(d,T)$ and let $n=\lfloor T/r\rfloor$. For every online regres
  \left(1+\sum_{m=0}^{n-1}\frac1{2\alpha+m}\right).
  \label{eq:lower}
 \end{equation}
-The expectation includes the learner's randomness and the uniform covariate order. In particular, the minimax rate is
-$\Theta(B^2r\log(eT/r))$. If $n\to\infty$ and then $\alpha\to\infty$ slowly enough, the lower bound is
-$(1-o(1))B^2r\log n$.
+The expectation includes the learner's randomness and the uniform covariate order. In particular, the minimax rate is $\Theta(B^2r\log(eT/r))$. If $n\to\infty$ and then $\alpha\to\infty$ slowly enough, the lower bound is $(1-o(1))B^2r\log n$.
 \end{theorem}
 
 The construction uses $n$ copies of each coordinate vector and pads with zeros. Independently by coordinate, draw $p_j\sim\operatorname{Beta}(\alpha,\alpha)$ and labels with values $\pm B$ and mean $B(2p_j-1)$. Posterior variance forces prediction cost, while the hindsight comparator is the sample mean. The exact conjugate calculation is in Appendix~\ref{app:lower}. Averaging produces a deterministic adaptive label strategy, so the Bayesian device does not enlarge the adversary class.
@@ -323,8 +289,7 @@ Three limitations are deliberate. Randomness is imposed on covariate arrival, so
 A random covariate order restores the same logarithmic doubly-uniform rate previously associated with advance design knowledge. The mechanism is exact: backward deletion converts each current leverage score into a rank-controlled Bernoulli surrogate. Because VAW regret is pathwise below the leverage sum, labels need not be randomized or stochastic. The resulting phase transition separates the role of feature arrival from assumptions on outcomes and supplies sharp expectation, concentration, and minimax guarantees without geometric normalization.
 
 \begingroup
-\small
-\setlength{\bibsep}{1pt}
+\small \setlength{\bibsep}{1pt}
 \bibliography{references}
 \endgroup
 
