@@ -14,5 +14,6 @@ online regression, random order, uniform guarantees, sequential prediction, regr
 
 ## Files
 
+- `main_2026-08-12.pdf`, the paper as first published, with its OpenTimestamps proof `main_2026-08-12.pdf.ots`.
 - source: `aistats2026.sty`, `appendix.tex`, `checklist.tex`, `main_2026-08-12.tex`, `references.bib`.
-- also: `main_2026-08-12.bbl`, `main_2026-08-12.pdf`.
+- also: `main_2026-08-12.bbl`.
